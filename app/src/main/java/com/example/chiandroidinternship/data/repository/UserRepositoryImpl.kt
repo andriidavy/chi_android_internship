@@ -4,12 +4,13 @@ import android.app.Application
 import com.example.chiandroidinternship.data.db.UserDatabase
 import com.example.chiandroidinternship.data.db.dao.UserDao
 import com.example.chiandroidinternship.data.entity.User
+import kotlinx.coroutines.flow.Flow
 
-class UserRepositoryImpl(private val application: Application): UserRepository {
+class UserRepositoryImpl(private val application: Application) : UserRepository {
 
     private lateinit var userDao: UserDao
 
-    init{
+    init {
         createDatabase()
     }
 
@@ -17,7 +18,7 @@ class UserRepositoryImpl(private val application: Application): UserRepository {
         userDao.insert(user)
     }
 
-    override suspend fun getAllUsers(): List<User> {
+    override fun getAllUsers(): Flow<List<User>> {
         return userDao.getAllUsers()
     }
 
@@ -25,7 +26,11 @@ class UserRepositoryImpl(private val application: Application): UserRepository {
         userDao.update(user)
     }
 
-    private fun createDatabase(){
+    override suspend fun deleteUser(user: User) {
+        userDao.delete(user)
+    }
+
+    private fun createDatabase() {
         userDao = UserDatabase.getInstance(application).getUserDao()
     }
 }

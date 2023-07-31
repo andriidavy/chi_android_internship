@@ -8,45 +8,23 @@ import com.example.chiandroidinternship.R
 import com.example.chiandroidinternship.data.entity.User
 import com.example.chiandroidinternship.databinding.UserItemBinding
 
-class UserAdapter(private var userList: List<User>) :
-    RecyclerView.Adapter<UserAdapter.ViewHolder>() {
-
-    private lateinit var mListener: OnItemClickListener
-    private lateinit var checkBoxListener: OnCheckBoxClickListener
-
-    interface OnItemClickListener {
-        fun onItemClick(position: Int)
-    }
-
-    interface OnCheckBoxClickListener {
-        fun onCheckBoxClick(position: Int, isChecked:Boolean)
-    }
-
-    fun setOnItemClickListener(listener: OnItemClickListener) {
-        mListener = listener
-    }
-
-    fun setOnCheckBoxClickListener(listener: OnCheckBoxClickListener) {
-        checkBoxListener = listener
-    }
+class UserAdapter(
+    private var userList: List<User>,
+    private val mListener: (Int) -> Unit,
+    private val checkBoxListener: (Int, Boolean) -> Unit,
+    private val longListener: (Int) -> Unit
+) : RecyclerView.Adapter<UserAdapter.ViewHolder>() {
 
     class ViewHolder(
-        var view: UserItemBinding,
-        listener: OnItemClickListener
+        var view: UserItemBinding
     ) :
-        RecyclerView.ViewHolder(view.root) {
-        init {
-            view.root.setOnClickListener {
-                listener.onItemClick(adapterPosition)
-            }
-        }
-    }
+        RecyclerView.ViewHolder(view.root)
 
     // Create new views (invoked by the layout manager)
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
         val binding =
             UserItemBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
-        return ViewHolder(binding, mListener)
+        return ViewHolder(binding)
     }
 
     // Replace the contents of a view (invoked by the layout manager)
@@ -62,11 +40,19 @@ class UserAdapter(private var userList: List<User>) :
 
         viewHolder.view.checkBox.isChecked = data.isStudent
 
-        viewHolder.view.checkBox.setOnCheckedChangeListener{_, isChecked->
+        viewHolder.view.checkBox.setOnCheckedChangeListener { _, isChecked ->
             data.isStudent = isChecked
-            checkBoxListener.onCheckBoxClick(position, isChecked)
+            checkBoxListener.invoke(position, isChecked)
         }
 
+        viewHolder.view.root.setOnClickListener {
+            mListener.invoke(position)
+        }
+
+        viewHolder.view.root.setOnLongClickListener {
+            longListener.invoke(position)
+            true
+        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -76,5 +62,6 @@ class UserAdapter(private var userList: List<User>) :
     fun updateUsers(newUsers: List<User>) {
         userList = newUsers
         notifyDataSetChanged()
+
     }
 }
